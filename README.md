@@ -12,6 +12,9 @@ the other version is the actual script itself, as it contains extra functionalit
 open the empty.blend file, and load and run `spacestation.py`. Alternatively, the `spacestation.hy` script also
 works with [https://github.com/chr15m/blender-hylang-live-code](https://github.com/chr15m/blender-hylang-live-code).
 
+# Changes #
+When using the addon version, you no longer need to open `empty.blend` manually. The material is applied automatically, and the "Use Background" option in the tool panel will import the background (world) settings from `empty.blend` directly into your current scene.
+
 # What it does #
 The generation is done by adding a random amout of modules to a central beam.
 The modules are one of:

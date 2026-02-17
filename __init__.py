@@ -27,6 +27,7 @@ class GenerateSpacestation(bpy.types.Operator):
 
     use_seed: bpy.props.BoolProperty(default=False, name="Use Seed")  # type: ignore
     seed: bpy.props.IntProperty(default=5, name="Seed (Requires 'Use Seed')")  # type: ignore
+    use_background: bpy.props.BoolProperty(default=False, name="Use Background")  # type: ignore
     parts_min: bpy.props.IntProperty(default=3, min=0, name="Min. Parts")  # type: ignore
     parts_max: bpy.props.IntProperty(default=8, min=3, name="Max. Parts")  # type: ignore
     torus_major_min: bpy.props.FloatProperty(default=2.0, min=0.1, name="Min. Torus radius")  # type: ignore
@@ -64,6 +65,8 @@ class GenerateSpacestation(bpy.types.Operator):
             "storage_max":    self.storage_max
         }
         spacestation.generate_station(seed, config)
+        if self.use_background:
+            spacestation.apply_background()
         return {'FINISHED'}
 
 icons = None

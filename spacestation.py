@@ -42,6 +42,22 @@ def _ensure_material():
         bpy.ops.wm.append(filename='SpaceStation', directory=directory)
     return bpy.data.materials.get('SpaceStation')
 
+def apply_background():
+    """Append 'World' from empty.blend and assign it to the current scene."""
+    blend = os.path.join(os.path.dirname(__file__), "empty.blend")
+    directory = blend + "/World/"
+    with bpy.data.libraries.load(blend) as (data_from, data_to):
+        worlds = data_from.worlds
+    if worlds:
+        world_name = worlds[0]
+        # Remove existing world with the same name to get a fresh copy
+        if world_name in bpy.data.worlds:
+            bpy.data.worlds.remove(bpy.data.worlds[world_name])
+        bpy.ops.wm.append(filename=world_name, directory=directory)
+        world = bpy.data.worlds.get(world_name)
+        if world is not None:
+            bpy.context.scene.world = world
+
 def set_material():
     _ensure_material()
     bpy.ops.object.editmode_toggle()
