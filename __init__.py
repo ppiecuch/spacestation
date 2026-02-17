@@ -1,3 +1,4 @@
+import os
 import random
 
 if "bpy" in locals():
@@ -7,12 +8,13 @@ else:
     from . import spacestation
 
 import bpy
+import bpy.utils.previews
 
 bl_info = {
     "name": "Spacestation Generator",
     "author": "Rahix",
-    "version": (0, 1, 0),
-    "blender": (2, 76, 0),
+    "version": (0, 1, 1),
+    "blender": (4, 2, 0),
     "location": "View3D > Add > Mesh",
     "description": "Procedural Spacestation generator",
     "category": "Add Mesh"
@@ -23,22 +25,22 @@ class GenerateSpacestation(bpy.types.Operator):
     bl_label  = "Spacestation"
     bl_options = {'REGISTER', 'UNDO'}
 
-    use_seed = bpy.props.BoolProperty(default=False, name="Use Seed")
-    seed = bpy.props.IntProperty(default=5, name="Seed (Requires 'Use Seed')")
-    parts_min = bpy.props.IntProperty(default=3, min=0, name="Min. Parts")
-    parts_max = bpy.props.IntProperty(default=8, min=3, name="Max. Parts")
-    torus_major_min = bpy.props.FloatProperty(default=2.0, min=0.1, name="Min. Torus radius")
-    torus_major_max = bpy.props.FloatProperty(default=5.0, min=0.1, name="Max. Torus radius")
-    torus_minor_min = bpy.props.FloatProperty(default=0.1, min=0.1, name="Min. Torus thickness")
-    torus_minor_max = bpy.props.FloatProperty(default=0.5, min=0.1, name="Max. Torus thickness")
-    bevelbox_min = bpy.props.FloatProperty(default=0.2, min=0.1, name="Min. Bevelbox scale")
-    bevelbox_max = bpy.props.FloatProperty(default=0.5, min=0.1, name="Max. Bevelbox scale")
-    cylinder_min = bpy.props.FloatProperty(default=0.5, min=0.1, name="Min. Cylinder radius")
-    cylinder_max = bpy.props.FloatProperty(default=3.0, min=0.1, name="Max. Cylinder radius")
-    cylinder_h_min = bpy.props.FloatProperty(default=0.3, min=0.1, name="Min. Cylinder height")
-    cylinder_h_max = bpy.props.FloatProperty(default=1.0, min=0.1, name="Max. Cylinder height")
-    storage_min = bpy.props.FloatProperty(default=0.5, min=0.1, name="Min. Storage height")
-    storage_max = bpy.props.FloatProperty(default=1.0, min=0.1, name="Max. Storage height")
+    use_seed: bpy.props.BoolProperty(default=False, name="Use Seed")  # type: ignore
+    seed: bpy.props.IntProperty(default=5, name="Seed (Requires 'Use Seed')")  # type: ignore
+    parts_min: bpy.props.IntProperty(default=3, min=0, name="Min. Parts")  # type: ignore
+    parts_max: bpy.props.IntProperty(default=8, min=3, name="Max. Parts")  # type: ignore
+    torus_major_min: bpy.props.FloatProperty(default=2.0, min=0.1, name="Min. Torus radius")  # type: ignore
+    torus_major_max: bpy.props.FloatProperty(default=5.0, min=0.1, name="Max. Torus radius")  # type: ignore
+    torus_minor_min: bpy.props.FloatProperty(default=0.1, min=0.1, name="Min. Torus thickness")  # type: ignore
+    torus_minor_max: bpy.props.FloatProperty(default=0.5, min=0.1, name="Max. Torus thickness")  # type: ignore
+    bevelbox_min: bpy.props.FloatProperty(default=0.2, min=0.1, name="Min. Bevelbox scale")  # type: ignore
+    bevelbox_max: bpy.props.FloatProperty(default=0.5, min=0.1, name="Max. Bevelbox scale")  # type: ignore
+    cylinder_min: bpy.props.FloatProperty(default=0.5, min=0.1, name="Min. Cylinder radius")  # type: ignore
+    cylinder_max: bpy.props.FloatProperty(default=3.0, min=0.1, name="Max. Cylinder radius")  # type: ignore
+    cylinder_h_min: bpy.props.FloatProperty(default=0.3, min=0.1, name="Min. Cylinder height")  # type: ignore
+    cylinder_h_max: bpy.props.FloatProperty(default=1.0, min=0.1, name="Max. Cylinder height")  # type: ignore
+    storage_min: bpy.props.FloatProperty(default=0.5, min=0.1, name="Min. Storage height")  # type: ignore
+    storage_max: bpy.props.FloatProperty(default=1.0, min=0.1, name="Max. Storage height")  # type: ignore
 
     def execute(self, context):
         if not self.use_seed:
@@ -64,18 +66,34 @@ class GenerateSpacestation(bpy.types.Operator):
         spacestation.generate_station(seed, config)
         return {'FINISHED'}
 
+icons = None
+
 def add_menu_entry(self, context):
-    self.layout.operator(GenerateSpacestation.bl_idname, "Spacestation")
+    self.layout.operator(
+        GenerateSpacestation.bl_idname,
+        text="Spacestation",
+        icon_value=icons["spacestation"].icon_id
+    )
 
 def register():
-    #bpy.utils.register_class(GenerateSpacestation)
-    bpy.utils.register_module(__name__)
-    bpy.types.INFO_MT_mesh_add.append(add_menu_entry)
+    global icons
+    if icons is None:
+        icons = bpy.utils.previews.new()
+        icons.load(
+            "spacestation",
+            os.path.join(os.path.dirname(__file__), "icons", "spacestation.png"),
+            "IMAGE"
+        )
+    bpy.utils.register_class(GenerateSpacestation)
+    bpy.types.VIEW3D_MT_mesh_add.append(add_menu_entry)
 
 def unregister():
-    #bpy.utils.unregister_class(GenerateSpacestation)
-    bpy.utils.unregister_module(__name__)
-    bpy.types.INFO_MT_mesh_add.remove(add_menu_entry)
+    global icons
+    bpy.types.VIEW3D_MT_mesh_add.remove(add_menu_entry)
+    bpy.utils.unregister_class(GenerateSpacestation)
+    if icons is not None:
+        bpy.utils.previews.remove(icons)
+        icons = None
 
 if __name__ == "__main__":
     register()
