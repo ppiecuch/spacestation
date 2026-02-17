@@ -13,7 +13,7 @@ import bpy.utils.previews
 bl_info = {
     "name": "Spacestation Generator",
     "author": "Rahix",
-    "version": (0, 1, 1),
+    "version": (0, 2, 2),
     "blender": (4, 2, 0),
     "location": "View3D > Add > Mesh",
     "description": "Procedural Spacestation generator",
@@ -27,6 +27,7 @@ class GenerateSpacestation(bpy.types.Operator):
 
     use_seed: bpy.props.BoolProperty(default=False, name="Use Seed")  # type: ignore
     seed: bpy.props.IntProperty(default=5, name="Seed (Requires 'Use Seed')")  # type: ignore
+    internal_seed: bpy.props.IntProperty(default=0, options={'HIDDEN'})  # type: ignore
     use_background: bpy.props.BoolProperty(default=False, name="Use Background")  # type: ignore
     parts_min: bpy.props.IntProperty(default=3, min=0, name="Min. Parts")  # type: ignore
     parts_max: bpy.props.IntProperty(default=8, min=3, name="Max. Parts")  # type: ignore
@@ -43,11 +44,11 @@ class GenerateSpacestation(bpy.types.Operator):
     storage_min: bpy.props.FloatProperty(default=0.5, min=0.1, name="Min. Storage height")  # type: ignore
     storage_max: bpy.props.FloatProperty(default=1.0, min=0.1, name="Max. Storage height")  # type: ignore
 
+    def invoke(self, context, event):
+        self.internal_seed = random.randint(0, 100000)
+        return self.execute(context)
+
     def execute(self, context):
-        if not self.use_seed:
-            seed = random.randint(0, 100000)
-        else:
-            seed = self.seed
         config = {
             "min_parts":      self.parts_min,
             "max_parts":      self.parts_max,
@@ -64,6 +65,8 @@ class GenerateSpacestation(bpy.types.Operator):
             "storage_min":    self.storage_min,
             "storage_max":    self.storage_max
         }
+        base_seed = self.seed if self.use_seed else self.internal_seed
+        seed = base_seed + hash(tuple(sorted(config.items()))) % 100000
         spacestation.generate_station(seed, config)
         if self.use_background:
             spacestation.apply_background()
